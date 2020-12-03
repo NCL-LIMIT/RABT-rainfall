@@ -1,16 +1,11 @@
 import collections
 
-import hashlib
-import hmac
 import time
 import datetime
 import csv
 
-import urllib.parse
-import urllib.request
 import json
 import requests
-import pandas as pd
 
 api_obs = []
 file_data = []
