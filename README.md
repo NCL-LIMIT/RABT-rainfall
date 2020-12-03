@@ -6,7 +6,7 @@ The HOBOnet sensors live on the RABT hillside and work with a HOBOnet Station Da
 
 The process-rainfall.py file can be configured to run from the api, or accept test json input from file. The output from the script can be directed to a csv file or the RabiitMQ message broker
 
-# RabbitMQ
+### RabbitMQ
 
 A local instance of RabbitMQ can be created by using the following Docker commands at the command prompt (tested on Windows only).
 
