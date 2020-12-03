@@ -28,15 +28,15 @@ rain_duration_in_mins = 0
 
 # New hobo data download 
 # uncomment this block to run with live api data
-allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-api_obs = requests.get(allDay)
-response = api_obs.json()
+#allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+#api_obs = requests.get(allDay)
+#response = api_obs.json()
 
 # run with static file data
-#with open('sample_rain_data.json') as f:
-  #file_data = json.load(f)
+with open('sample_rain_data.json') as f:
+    file_data = json.load(f)
 
-#response = file_data
+response = file_data
 #print(response) 
 
 # iterate through the array and add each element to the sum variable one at a time 
@@ -59,10 +59,13 @@ with open('rain_data_out.csv', mode='w',  newline='') as csv_file:
         # get each rain rate measurement
         rain_rate_last10mins =response['observations'][i]['metric']['precipRate']
 
-        # check for invalid values, use previous value instead
+        # check for invalid values: if it's not the first reading use previous value instead, otherwise reset to zero
         if(rain_rate_last10mins > 300) or (rain_rate_last10mins < 0):
-            rain_rate_last10mins = response['observations'][i-1]['metric']['precipRate'] 
-        
+            if(i != 0):
+                rain_rate_last10mins = response['observations'][i-1]['metric']['precipRate']
+            else:      
+                rain_rate_last10mins = 0
+
         # add to array (for debug)
         rain_rates.append(rain_rate_last10mins)
         if(i != 0):
@@ -95,9 +98,9 @@ with open('rain_data_out.csv', mode='w',  newline='') as csv_file:
     
         i = i + 1
     
-   
-print(rain_rates)
-print(averages)
+# debug   
+#print(rain_rates)
+#print(averages)
 
 
 
