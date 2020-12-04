@@ -21,3 +21,9 @@ If Docker is successful a GUID will be output at the terminal. The RabbitMQ mana
 (username: guest, password: guest).
 
 After running the process-rainfall.py file with the send_message flag enabled, messages should appear in the RabbitMQ 'rainfall' queue, unless the consumer.py file is running in a separate terminal, in which case the messages will pass straight through to that terminal. The consumer.py program stays open listening for messages, but will eventually time out if none are received.
+
+Stop the RabbitMQ process
+
+```
+docker stop rabbit-test && docker rm -f rabbit-test
+```
