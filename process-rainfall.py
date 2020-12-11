@@ -17,7 +17,7 @@ prev_rain_total = 0
 current_rain_total = 0
 rain_last10mins = 0
 rain_rate_last10mins = 0
-rain_rate_average = 0
+rain_rate_average = 0.0
 rain_duration_in_mins = 0
 
 
@@ -29,15 +29,15 @@ write_to_file = 0
 
 # New hobo data download 
 # uncomment this block to run with live api data
-#allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-#api_obs = requests.get(allDay)
-#response = api_obs.json()
+allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+api_obs = requests.get(allDay)
+response = api_obs.json()
 
 # run with static file data
-with open('sample_rain_data.json') as f:
-    file_data = json.load(f)
+#with open('sample_rain_data.json') as f:
+    #file_data = json.load(f)
 
-response = file_data
+#response = file_data
 #print(response) 
 
 # iterate through the array and add each element to the sum variable one at a time 
@@ -69,7 +69,7 @@ for i in range(len(response['observations'])):
         if(i != 0):
             rain_rate_last10mins = response['observations'][i-1]['metric']['precipRate']
         else:      
-            rain_rate_last10mins = 0
+            rain_rate_last10mins = 0.0
 
     # if its not the first reading use the previous value
     if(i != 0):
@@ -111,14 +111,16 @@ for i in range(len(response['observations'])):
         connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
         if(connection):
             channel = connection.channel() # start a channel
-            channel.queue_declare(queue='rainfall') # declare a queue
+            channel.exchange_declare(exchange='rabt-rainfall-exchange', exchange_type='direct')
+            channel.queue_declare(queue='rabt-rainfall-queue') # declare a queue, then bind the queue to the exchange
+            channel.queue_bind(queue='rabt-rainfall-queue', exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue')
             # send a message
             # routing key must match the queue name
             message = str(last_recorded_time) + '|' + str(rain_last10mins) + '|' + str(current_rain_total) + '|' + str(rain_rate_last10mins) + '|' + str(rain_rate_average) + '|' + str(rain_duration_in_mins)
-            channel.basic_publish(exchange='', routing_key='rainfall', body=message)
+            channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
             print ("[x] Message sent to consumer")
             connection.close()
-
+    # increment i
     i = i + 1
 
 
