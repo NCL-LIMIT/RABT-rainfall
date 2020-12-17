@@ -29,15 +29,15 @@ write_to_file = 0
 
 # New hobo data download 
 # uncomment this block to run with live api data
-allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-api_obs = requests.get(allDay)
-response = api_obs.json()
+#allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+#api_obs = requests.get(allDay)
+#response = api_obs.json()
 
 # run with static file data
-#with open('sample_rain_data.json') as f:
-    #file_data = json.load(f)
+with open('sample_rain_data.json') as f:
+    file_data = json.load(f)
 
-#response = file_data
+response = file_data
 #print(response) 
 
 # iterate through the array and add each element to the sum variable one at a time 
@@ -109,35 +109,40 @@ for i in range(len(response['observations'])):
 
     # this will send a a message to rabbitmq given that it connects correctly
     # if consumer.py is running at the same time, the messages will appear in the console, otherwise they will wait in the 'rainfall' queue
-    if(send_message == 1):
-
-        # set up connection to  rabbitmq  
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        if(connection):
-            channel = connection.channel() # start a channel
-
-           # not needed now as set up in rabbit config
-           # channel.exchange_declare(exchange='rabt-rainfall-exchange', exchange_type='direct')
-           # channel.queue_declare(queue='rabt-rainfall-queue') # declare a queue, then bind the queue to the exchange
-           # channel.queue_bind(queue='rabt-rainfall-queue', exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue')
-
-            # send a message
-            # routing key must match the queue name
-
-            json_map = {}
-            json_map["last recorded time"] = str(last_recorded_time)
-            json_map["rain last 10 mins"] = rain_last10mins
-            json_map["current rain total"] = current_rain_total
-            json_map["rain rate last 10 mins"] = rain_rate_last10mins
-            json_map["rain rate average"] = rain_rate_average
-            json_map["rain duration in  mins"] = rain_duration_in_mins
-            message = json.dumps(json_map)
-           
-            channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
-            print ("[x] Message sent to consumer")
-            connection.close()
+   
     # increment i
     i = i + 1
+
+
+# only send last values
+if(send_message == 1):
+
+    # set up connection to  rabbitmq  
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    if(connection):
+        channel = connection.channel() # start a channel
+
+        # not needed now as set up in rabbit config
+        # channel.exchange_declare(exchange='rabt-rainfall-exchange', exchange_type='direct')
+        # channel.queue_declare(queue='rabt-rainfall-queue') # declare a queue, then bind the queue to the exchange
+        # channel.queue_bind(queue='rabt-rainfall-queue', exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue')
+
+        # send a message
+        # routing key must match the queue name
+
+        json_map = {}
+        json_map["last recorded time"] = str(last_recorded_time)
+        json_map["rain last 10 mins"] = rain_last10mins
+        json_map["current rain total"] = current_rain_total
+        json_map["rain rate last 10 mins"] = rain_rate_last10mins
+        json_map["rain rate average"] = rain_rate_average
+        json_map["rain duration in  mins"] = rain_duration_in_mins
+        message = json.dumps(json_map)
+        
+        channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
+        print ("Message sent to consumer")
+        connection.close()
+         
 
 
 
