@@ -22,7 +22,7 @@ rain_duration_in_mins = 0
 
 
 # flag to indicate whether we want to send to rabbitmq
-send_message = 0
+send_message = 1
 # flag to indciate whether to write to file
 write_to_file = 0
 
@@ -93,7 +93,7 @@ for i in range(len(response['observations'])):
     # calculate the sum of all rain rate obs
     sum_of_rain_rates = _sum(rain_rates)
     sum_of_rain_rates = round(sum_of_rain_rates,2)
-    
+
     # avoid division by zero on the first row
     if(i != 0):
         rain_rate_average = sum_of_rain_rates / i
