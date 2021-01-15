@@ -9,7 +9,6 @@ import requests
 import pika
 
 api_obs = []
-file_data = []
 rain_rates = []
 averages = []
 average = 0
@@ -23,9 +22,6 @@ rain_duration_in_mins = 0
 
 # flag to indicate whether we want to send to rabbitmq
 send_message = 1
-# flag to indciate whether to write to file
-write_to_file = 0
-
 
 while(True):
     time.sleep(600)
@@ -36,11 +32,6 @@ while(True):
     api_obs = requests.get(allDay)
     response = api_obs.json()
 
-    # run with static file data
-    #with open('sample_rain_data.json') as f:
-        #file_data = json.load(f)
-
-    #response = file_data
     #print(response) 
 
     # iterate through the array and add each element to the sum variable one at a time 
@@ -49,17 +40,7 @@ while(True):
         for i in arr: 
             sum = sum + i      
         return(sum) 
-
-      
-    print('\nDateTime|Rain last 10 mins|Total rainfall|Rain rate|Rain rate last 10 mins|Rainfall duration\n')
-
-    # if write to file is required, open the file handle and write the header
-    if(write_to_file ==1):
-        with open('rain_data_out.csv', mode='w',  newline='') as csv_file:
-            fieldnames = ['last recorded time', 'rain last 10 mins', 'current rain total', 'rain rate last 10 mins', 'rain rate average', 'rain duration in mins' ]
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            writer.writeheader()
-
+ 
     # increment for each 10 minute period
     rain_duration_in_mins = rain_duration_in_mins + 10
 
@@ -106,10 +87,6 @@ while(True):
 
         print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
         
-        # write each row to file
-        if (write_to_file == 1):
-            writer.writerow({'last recorded time': last_recorded_time, 'rain last 10 mins': rain_last10mins, 'current rain total': current_rain_total, 'rain rate last 10 mins': rain_rate_last10mins, 'rain rate average': rain_rate_average, 'rain duration in mins': rain_duration_in_mins })
-
         # this will send a a message to rabbitmq given that it connects correctly
         # if consumer.py is running at the same time, the messages will appear in the console, otherwise they will wait in the 'rainfall' queue
     
