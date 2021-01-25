@@ -21,13 +21,11 @@ def runAPICall(event, context):
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
-    # New hobo data download 
-    # uncomment this block to run with live api data
-    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
+    #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f" 
     api_obs = requests.get(allDay)
     response = api_obs.json()
-
-    #print(response) 
 
     # iterate through the array and add each element to the sum variable one at a time 
     def _sum(arr):   
@@ -60,17 +58,13 @@ def runAPICall(event, context):
             prev_rain_total=(response['observations'][i-1]['metric']['precipTotal'] )
         
 
-        print('prev_rain_total', prev_rain_total)
         current_rain_total=(response['observations'][i]['metric']['precipTotal'] )
-        print('current_rain_total',  current_rain_total)
         rain_last10mins = (current_rain_total-prev_rain_total)
         rain_last10mins = round(rain_last10mins, 2)
-        print('rain_last15mins', rain_last10mins, '\n')
-
         last_recorded_timeUTC=(response['observations'][i]['obsTimeUtc'] )
+        
         ## format last recorded time
         last_recorded_time = datetime.datetime.strptime(last_recorded_timeUTC, "%Y-%m-%dT%H:%M:%SZ")
-        print('last_recorded_time', last_recorded_time)
         # calculate the sum of all rain rate obs
         sum_of_rain_rates = _sum(rain_rates)
         sum_of_rain_rates = round(sum_of_rain_rates,2)
@@ -80,30 +74,23 @@ def runAPICall(event, context):
             rain_rate_average = sum_of_rain_rates / i
             rain_rate_average = round(rain_rate_average, 2)
 
-        print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
-        
-        # this will send a a message to rabbitmq given that it connects correctly
-        # if consumer.py is running at the same time, the messages will appear in the console, otherwise they will wait in the 'rainfall' queue
-    
         # increment i
         i = i + 1
 
     # only send last values
+    # this will send a a message to rabbitmq given that it connects correctly
+    # if any consumer is running at the same time, the messages will travel through rabbitmq, otherwise they will wait in the 'rabt-rainfall' queue
     if(send_message == 1):
 
+        print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
+        
+    
         # set up connection to  rabbitmq  
         connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
         if(connection):
-            channel = connection.channel() # start a channel
-
-            # not needed now as set up in rabbit config
-            # channel.exchange_declare(exchange='rabt-rainfall-exchange', exchange_type='direct')
-            # channel.queue_declare(queue='rabt-rainfall-queue') # declare a queue, then bind the queue to the exchange
-            # channel.queue_bind(queue='rabt-rainfall-queue', exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue')
-
-            # send a message
-            # routing key must match the queue name
-
+            # start a channel
+            channel = connection.channel() 
+            # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'
             json_map = {}
             json_map["last recorded time"] = str(last_recorded_time)
             json_map["rain last 10 mins"] = rain_last10mins
@@ -112,7 +99,8 @@ def runAPICall(event, context):
             json_map["rain rate average"] = rain_rate_average
             json_map["rain duration in  mins"] = rain_duration_in_mins
             message = json.dumps(json_map)
-            
+
+            # send a message : routing key must match the queue name
             channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
             print ("Message sent to consumer")
             connection.close()
