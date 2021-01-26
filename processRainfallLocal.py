@@ -29,14 +29,12 @@ def runAPICall(event, context):
         rain_rates = []
 
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        allDay="https://api.weathedfsdfsdfr.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
-        # #todo If no response...?
 
         # Handle unexpected responses
         if api_obs.status_code:
-            print('here')
             if api_obs.status_code != 200:
                 # Send to debug topic
                 if(send_message == 1):
@@ -46,13 +44,13 @@ def runAPICall(event, context):
                     if(connection):
                         # start a channel
                         channel = connection.channel()
-                        # rabbit config sets up: exchange='debug-exchange', queue='rainfall-debug'
+                        # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
                         json_map = {}
                         json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
                         message = json.dumps(json_map)
 
                         # send a message
-                        channel.basic_publish(exchange='debug-exchange', routing_key='debug.rainfall', body=message)
+                        channel.basic_publish(exchange='rabt-debug-exchange', routing_key='debug.rainfall', body=message)
                         print ("Message sent to consumer (debug topic)")
                         connection.close()
                         return
