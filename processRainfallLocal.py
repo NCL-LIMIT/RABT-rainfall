@@ -17,7 +17,7 @@ def runAPICall(event, context):
     rain_rate_last10mins = 0
     rain_rate_average = 0.0
     rain_duration_in_mins = 0
-    connectionParameters = 'localhost'
+    BASE_URL = 'localhost'
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
@@ -33,14 +33,15 @@ def runAPICall(event, context):
         # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
 
-        # Handle unexpected responses
+        # Handle unexpected responses by sending message to debug queue and restarting function
         if api_obs.status_code:
             if api_obs.status_code != 200:
                 # Send to debug topic
                 if (send_message == 1):
 
                     # set up connection to  rabbitmq
-                    connection = pika.BlockingConnection(pika.ConnectionParameters(connectionParameters))
+                    # todo handle failure to connect to queue?
+                    connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
                     if (connection):
                         # start a channel
                         channel = connection.channel()
@@ -118,7 +119,7 @@ def runAPICall(event, context):
                   rain_rate_average, '|', rain_duration_in_mins, '\n')
 
             # set up connection to  rabbitmq  
-            connection = pika.BlockingConnection(pika.ConnectionParameters(connectionParameters))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
             if (connection):
                 # start a channel
                 channel = connection.channel()
