@@ -17,21 +17,46 @@ def runAPICall(event, context):
     rain_rate_last10mins = 0
     rain_rate_average = 0.0
     rain_duration_in_mins = 0
-
+    connectionParameters = 'localhost'
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
     # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
     while(True):
-        time.sleep(600)
+        time.sleep(6)
 
         rain_rates = []
 
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-        #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f" 
+        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
+        # #todo If no response...?
+
+        # Handle unexpected responses
+        if api_obs.status_code:
+            print('here')
+            if api_obs.status_code != 200:
+                # Send to debug topic
+                if(send_message == 1):
+
+                    # set up connection to  rabbitmq
+                    connection = pika.BlockingConnection(pika.ConnectionParameters(connectionParameters))
+                    if(connection):
+                        # start a channel
+                        channel = connection.channel()
+                        # rabbit config sets up: exchange='debug-exchange', queue='rainfall-debug'
+                        json_map = {}
+                        json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
+                        message = json.dumps(json_map)
+
+                        # send a message
+                        channel.basic_publish(exchange='debug-exchange', routing_key='debug.rainfall', body=message)
+                        print ("Message sent to consumer (debug topic)")
+                        connection.close()
+                        return
+
         response = api_obs.json()
 
         # iterate through the array and add each element to the sum variable one at a time 
@@ -94,7 +119,7 @@ def runAPICall(event, context):
             print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
 
             # set up connection to  rabbitmq  
-            connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(connectionParameters))
             if(connection):
                 # start a channel
                 channel = connection.channel() 
