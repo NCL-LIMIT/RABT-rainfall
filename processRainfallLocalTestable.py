@@ -4,7 +4,6 @@ import datetime
 import csv
 import json
 import requests
-import pika
 import rabbitmq
 
 def runAPICall(event, context):

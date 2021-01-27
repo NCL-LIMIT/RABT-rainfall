@@ -1,15 +1,10 @@
 import pytest
 import rabbitmq
-import sys
-import os
 from unittest.mock import Mock
 from tests.mocks import pika
 
-# sys.path.append(os.environ['CONFIG'])
-# from config import *
 
-
-#  To run only unit tests, run pytest -m unit, else run pytest to run all tests
+# To run only unit tests, run pytest -m unit, else run pytest to run all tests
 # Unit tests using mock pika to mock the connection with RabbitMQ
 @pytest.mark.unit
 def test_channel_sets_parameters(monkeypatch):
@@ -21,6 +16,7 @@ def test_channel_sets_parameters(monkeypatch):
 
     mocked_pika.URLParameters.assert_called_once_with('testChannel host')
 
+
 @pytest.mark.unit
 def test_channel_creates_connection(monkeypatch):
     mocked_pika = Mock()
@@ -31,6 +27,7 @@ def test_channel_creates_connection(monkeypatch):
     rabbitmq.create('testChannel host')
 
     mocked_pika.BlockingConnection.assert_called_once_with('testChannel')
+
 
 @pytest.mark.unit
 def test_sender_publish_new_message(monkeypatch):
