@@ -23,13 +23,13 @@ def runAPICall(event, context):
 
     # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
     while (True):
-        time.sleep(10)
+        time.sleep(1)
 
         rain_rates = []
 
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-        allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
 
         # Handle unexpected responses by sending message to debug queue and restarting function
@@ -40,7 +40,7 @@ def runAPICall(event, context):
 
                     # set up connection to  rabbitmq
                     # start a channel
-                    channel = rabbitmq.create(rabbit_connection_string)
+                    channel = rabbitmq.create(rabbit_connection_string).channel()
                     # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
                     json_map = {}
                     json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
@@ -116,7 +116,8 @@ def runAPICall(event, context):
             # connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
             # if (connection):
             # start a channel
-            channel = rabbitmq.create(rabbit_connection_string)
+            connection = rabbitmq.create(rabbit_connection_string)
+            channel = connection.channel()
             # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'
             json_map = {}
             json_map["last-recorded-time"] = str(last_recorded_time)
@@ -130,7 +131,7 @@ def runAPICall(event, context):
             # send a message : routing key must match the queue name
             # channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue',
             #                       body=message)
-            rabbitmq.publish(channel, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
+            rabbitmq.publish(connection, channel, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
             print("Message sent to consumer")
             # connection.close()
 

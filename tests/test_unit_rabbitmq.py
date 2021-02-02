@@ -33,8 +33,10 @@ def test_channel_creates_connection(monkeypatch):
 def test_sender_publish_new_message(monkeypatch):
     channel = pika.Channel()
     channel.basic_publish = Mock()
+    mocked_pika = Mock()
+    mocked_pika.BlockingConnection.return_value = pika.Connection()
 
-    rabbitmq.publish(channel, 'testMessage', 'testQueue', 'testExchange')
+    rabbitmq.publish(pika.Connection(), channel, 'testMessage', 'testQueue', 'testExchange')
 
     channel.basic_publish.assert_called_once_with(
         routing_key='testQueue',

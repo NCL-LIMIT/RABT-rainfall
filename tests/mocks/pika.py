@@ -8,7 +8,9 @@ class Channel:
     def start_consuming(self): pass
     def basic_publish(self): pass
     def basic_ack(self): pass
+    def close(self): pass
 
 class Connection:
     def __init__(self): pass
     def channel(self): return Channel()
+    def close(self): pass
