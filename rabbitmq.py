@@ -14,18 +14,16 @@ def create(rabbit_connection_string):
 
 
 
-# Publish a message to the queue
+# Publish a message to the queue and close connection
 def publish(
         channel,
         body,
         queue,
         exchange,
 ):
-    while(True):
-        try:
-            channel.basic_publish(routing_key=queue, exchange=exchange, body=body)
-        except pika.exceptions.AMQPConnectionError:
-            print("Connection error, retrying...")
+    channel.basic_publish(routing_key=queue, exchange=exchange, body=body)
+    channel.close()
+
 
 
 # def subscribe(

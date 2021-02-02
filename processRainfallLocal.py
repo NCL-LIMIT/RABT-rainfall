@@ -24,7 +24,7 @@ def runAPICall(event, context):
 
     # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
     while (True):
-        time.sleep(30)
+        time.sleep(10)
 
         rain_rates = []
 
@@ -40,7 +40,6 @@ def runAPICall(event, context):
                 if (send_message == 1):
 
                     # set up connection to  rabbitmq
-                    # todo handle failure to connect to queue?
                     connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
                     if (connection):
                         # start a channel

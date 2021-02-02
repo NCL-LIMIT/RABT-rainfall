@@ -39,10 +39,6 @@ def runAPICall(event, context):
                 if (send_message == 1):
 
                     # set up connection to  rabbitmq
-                    # todo handle failure to connect to queue?
-
-                    # connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
-                    # if (connection):
                     # start a channel
                     channel = rabbitmq.create(rabbit_connection_string)
                     # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
@@ -52,10 +48,7 @@ def runAPICall(event, context):
 
                     # send a message
                     rabbitmq.publish(channel, message, 'debug.rainfall', 'rabt-debug-exchange')
-                    # channel.basic_publish(exchange='rabt-debug-exchange', routing_key='debug.rainfall',
-                    #                       body=message)
                     print("Message sent to consumer (debug topic)")
-                    # connection.close()
                     runAPICall(None, None)
 
         response = api_obs.json()
