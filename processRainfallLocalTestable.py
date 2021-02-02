@@ -17,6 +17,7 @@ def runAPICall(event, context):
     rain_rate_average = 0.0
     rain_duration_in_mins = 0
     rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
+    connectionAttemptInterval = 10 # interval when to retry to connect to RabbitMQ, seconds
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
@@ -40,7 +41,9 @@ def runAPICall(event, context):
 
                     # set up connection to  rabbitmq
                     # start a channel
-                    channel = rabbitmq.create(rabbit_connection_string).channel()
+
+                    connection = rabbitmq.create(rabbit_connection_string, connectionAttemptInterval)
+                    channel = connection.channel()
                     # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
                     json_map = {}
                     json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
@@ -116,7 +119,7 @@ def runAPICall(event, context):
             # connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
             # if (connection):
             # start a channel
-            connection = rabbitmq.create(rabbit_connection_string)
+            connection = rabbitmq.create(rabbit_connection_string,  connectionAttemptInterval)
             channel = connection.channel()
             # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'
             json_map = {}

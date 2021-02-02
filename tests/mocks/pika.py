@@ -14,3 +14,7 @@ class Connection:
     def __init__(self): pass
     def channel(self): return Channel()
     def close(self): pass
+    def is_open(self): pass
+
+class exceptions:
+    def AMQPConnectionError(self): pass
