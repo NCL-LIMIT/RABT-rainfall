@@ -1,16 +1,24 @@
+import time
+
 import pika
 
 # Create a channel
 def create(rabbit_connection_string):
-    while(True):
-        parameters = pika.URLParameters(rabbit_connection_string)
+    attempts = 0
+    parameters = pika.URLParameters(rabbit_connection_string)
+
+    while attempts < 10:
         try:
             connection = pika.BlockingConnection(parameters)
             return connection.channel()
 
         except pika.exceptions.AMQPConnectionError:
-            print("Connection error, retrying...")
-            # todo how to handle not being able to create a connection
+            print("Connection error, retrying. Attempt " + str(attempts))
+            time.sleep(10)
+            attempts += 1
+
+    raise ConnectionError("Unable to connection to RabbitMQ")
+
 
 
 
