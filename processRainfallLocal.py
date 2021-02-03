@@ -17,6 +17,7 @@ def runAPICall(event, context):
     rain_rate_last10mins = 0
     rain_rate_average = 0.0
     rain_duration_in_mins = 0
+    records = 0
 
 
     # flag to indicate whether we want to send to rabbitmq
@@ -79,18 +80,22 @@ def runAPICall(event, context):
 
             # avoid division by zero on the first row
             if(i != 0):
-                print('divide ', sum_of_rain_rates, 'by', i)
+                #print('divide ', sum_of_rain_rates, 'by', i)
                 rain_rate_average = sum_of_rain_rates / i
                 rain_rate_average = round(rain_rate_average, 2)
- 
+
+
+            records = i 
             # increment i
             i = i + 1
+         
 
         # only send last values
         # this will send a a message to rabbitmq given that it connects correctly
         # if any consumer is running at the same time, the messages will travel through rabbitmq, otherwise they will wait in the 'rabt-rainfall' queue
         if(send_message == 1):
 
+            print(records, sum_of_rain_rates, '\n')
             print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
 
             # set up connection to  rabbitmq  
