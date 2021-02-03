@@ -30,9 +30,34 @@ def runAPICall(event, context):
         rain_rates = []
 
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-        #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f" 
+        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
+
+        # Handle unexpected responses by sending message to debug queue and restarting function
+        if api_obs.status_code:
+            if api_obs.status_code != 200:
+                # Send to debug topic
+                if (send_message == 1):
+
+                    # set up connection to  rabbitmq
+                    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+                    if (connection):
+                        # start a channel
+                        channel = connection.channel()
+                        # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
+                        json_map = {}
+                        json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
+                        message = json.dumps(json_map)
+
+                        # send a message
+                        channel.basic_publish(exchange='rabt-debug-exchange', routing_key='debug.rainfall',
+                                              body=message)
+                        print("Message sent to consumer (debug topic)")
+                        connection.close()
+                        runAPICall(None, None)
+
+
         response = api_obs.json()
 
         # iterate through the array and add each element to the sum variable one at a time 
