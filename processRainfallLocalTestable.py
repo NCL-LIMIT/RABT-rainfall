@@ -1,6 +1,6 @@
 import time
 import requests
-from rainfall.handleAPIResponse import handleResponse
+from handleAPIResponse import handleResponse
 
 def runAPICall(event, context):
     averages = []

@@ -1,14 +1,10 @@
 import datetime
 import json
-import requests
 import rabbitmqConnection
 
-def getResponse(api):
-    return requests.get(api)
-
-def handleResponse(res):
+def handleResponse(res, send_message):
     rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
-    connectionAttemptInterval = 10 # interval when to retry to connect to RabbitMQ, seconds
+    connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
 
 
     if res.status_code == 200:
@@ -28,8 +24,9 @@ def handleResponse(res):
         # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'
 
         # send a message : routing key must match the queue name
-        rabbitmqConnection.publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
-        print("Message sent to consumer")
+        if send_message == 1:
+            rabbitmqConnection.publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
+            print("Message sent to consumer")
 
     else:
         # Unexpected status code so send to debug topic
@@ -40,8 +37,9 @@ def handleResponse(res):
         message = json.dumps(json_map)
 
         # send a message
-        rabbitmqConnection.publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange')
-        print("Message sent to consumer (debug topic)")
+        if send_message == 1:
+            rabbitmqConnection.publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange')
+            print("Message sent to consumer (debug topic)")
 
 def createRainfallMessage(response):
     rain_rates = []
@@ -63,7 +61,7 @@ def createRainfallMessage(response):
         # increment for each 10 minute period
 
     rain_duration_in_mins = rain_duration_in_mins + 10
-    print(len(response['observations']))
+
     # loop through the data set using the total number of observations as a limit
     for i in range(len(response['observations'])):
 

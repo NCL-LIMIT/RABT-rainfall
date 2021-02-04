@@ -1,7 +1,5 @@
 import time
-
 import pika
-
 
 # Create a connection
 def create(rabbit_connection_string, attempt_interval):
