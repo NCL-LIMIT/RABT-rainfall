@@ -3,6 +3,7 @@ import json
 import rabbitmqConnection
 
 def handleResponse(res, send_message):
+    # todo replace connection string with env var?
     rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
     connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
 

@@ -6,6 +6,7 @@ def create(rabbit_connection_string, attempt_interval):
     attempts = 0
     parameters = pika.URLParameters(rabbit_connection_string)
 
+    # try to connect
     while attempts < 10:
         try:
             connection = pika.BlockingConnection(parameters)
@@ -16,6 +17,7 @@ def create(rabbit_connection_string, attempt_interval):
             time.sleep(attempt_interval)
             attempts += 1
 
+    # give up and throw exception
     raise ConnectionError("Unable to connection to RabbitMQ")
 
 
