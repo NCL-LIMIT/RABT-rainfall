@@ -14,6 +14,7 @@ def runAPICall(event, context):
         time.sleep(600)
 
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
+
         # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
