@@ -10,16 +10,13 @@ def runAPICall(event, context):
     send_message = 1
 
 
-    # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
-    while (True):
+    # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
+    #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    api_obs = requests.get(allDay)
 
-      # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-      #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-      allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f" 
-      api_obs = requests.get(allDay)
-
-      # handle API response by creating message and publishing to appropriate queue
-      handleResponse(api_obs, send_message)
+    # handle API response by creating message and publishing to appropriate queue
+    handleResponse(api_obs, send_message)
 
     return (event)
 
