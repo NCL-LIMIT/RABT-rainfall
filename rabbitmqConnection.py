@@ -7,7 +7,7 @@ import pika
 def create(rabbit_connection_string, attempt_interval):
     attempts = 0
     parameters = pika.URLParameters(rabbit_connection_string)
-    print(parameters)
+
     while attempts < 10:
         try:
             connection = pika.BlockingConnection(parameters)
@@ -24,12 +24,14 @@ def create(rabbit_connection_string, attempt_interval):
 # Publish a message to the queue and close channel
 def publish(
         connection,
-        channel,
         body,
         queue,
         exchange,
 ):  # todo error handling?
-    channel.basic_publish(routing_key=queue, exchange=exchange, body=body)
+
+    channel = connection.channel()
+
+    channel.basic_publish(exchange=exchange, routing_key=queue, body=body)
     if connection.is_open:
         connection.close()
 
