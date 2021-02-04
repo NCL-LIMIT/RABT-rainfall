@@ -1,7 +1,7 @@
 import time
 import pika
 
-# Create a connection
+# Create or attempt to create a connection to rabbitMQ
 def create(rabbit_connection_string, attempt_interval):
     attempts = 0
     parameters = pika.URLParameters(rabbit_connection_string)
@@ -19,29 +19,20 @@ def create(rabbit_connection_string, attempt_interval):
     raise ConnectionError("Unable to connection to RabbitMQ")
 
 
-# Publish a message to the queue and close channel
+# Publish a message to the queue and close connection
 def publish(
         connection,
         body,
         queue,
         exchange,
-):  # todo error handling?
+):
+    # todo error handling as above?
 
     channel = connection.channel()
 
     channel.basic_publish(exchange=exchange, routing_key=queue, body=body)
+
+    # close connection
     if connection.is_open:
         connection.close()
 
-# def subscribe(
-#         channel,
-#         handler,
-#         queue,
-#         durable,
-#         exchange,
-#         prefetch_count
-# ):
-#     channel.queue_declare(queue=queue, durable=durable)
-#     channel.queue_bind(queue=queue, exchange=exchange)
-#     channel.basic_qos(prefetch_count=prefetch_count)
-#     channel.basic_consume(queue=queue, on_message_callback=handler)
