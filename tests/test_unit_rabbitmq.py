@@ -84,24 +84,10 @@ def test_response_sample_function(mock_get):
 
 @pytest.mark.unit
 @patch('rainfall.handleAPIResponse.rabbitmqConnection.create', autospec=True)
-# @patch('rainfall.handleAPIResponse.channel', autospec=True)
 @patch('rainfall.handleAPIResponse.rabbitmqConnection.publish', autospec=True)
 def test_correct_queue_sent_on_non_200_response(mock_publish, mock_createConnection):
-    # mock rabbitmq connection
-
     connection = pika.Connection()
     mock_createConnection.return_value = connection
-    # mocked_channel = Mock()
-    # channel = pika.Channel()
-    # connection.channel.return_value = channel
-
-    # print(mock_createChannel.return_value.channel())
-
-
-    # channel = pika.Channel()
-    # channel.basic_publish = Mock()
-    # mocked_pika = Mock()
-    # mocked_pika.BlockingConnection.return_value = pika.Connection()
 
     json_map = {}
     json_map["error"] = "Weather API returned status 204"
@@ -110,7 +96,7 @@ def test_correct_queue_sent_on_non_200_response(mock_publish, mock_createConnect
     response = Mock()
     response.status_code = 204
 
-    handleResponse(response, "localhost", 10)
+    handleResponse(response)
 
     rabbitmqConnection.publish.assert_called_once_with(
         connection,  message, 'debug.rainfall', 'rabt-debug-exchange'
