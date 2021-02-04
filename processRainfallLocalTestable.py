@@ -4,7 +4,7 @@ import datetime
 import csv
 import json
 import requests
-import rabbitmq
+import rabbitmqConnection
 
 def runAPICall(event, context):
     api_obs = []
@@ -32,7 +32,7 @@ def runAPICall(event, context):
         # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
         api_obs = requests.get(allDay)
-
+        print('STATUS' + str(api_obs.status_code))
         # Handle unexpected responses by sending message to debug queue and restarting function
         if api_obs.status_code:
             if api_obs.status_code != 200:
@@ -42,7 +42,7 @@ def runAPICall(event, context):
                     # set up connection to  rabbitmq
                     # start a channel
 
-                    connection = rabbitmq.create(rabbit_connection_string, connectionAttemptInterval)
+                    connection = rabbitmqConnection.create(rabbit_connection_string, connectionAttemptInterval)
                     channel = connection.channel()
                     # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
                     json_map = {}
@@ -50,7 +50,7 @@ def runAPICall(event, context):
                     message = json.dumps(json_map)
 
                     # send a message
-                    rabbitmq.publish(channel, message, 'debug.rainfall', 'rabt-debug-exchange')
+                    rabbitmqConnection.publish(channel, message, 'debug.rainfall', 'rabt-debug-exchange')
                     print("Message sent to consumer (debug topic)")
                     runAPICall(None, None)
 
@@ -119,7 +119,7 @@ def runAPICall(event, context):
             # connection = pika.BlockingConnection(pika.ConnectionParameters(BASE_URL))
             # if (connection):
             # start a channel
-            connection = rabbitmq.create(rabbit_connection_string,  connectionAttemptInterval)
+            connection = rabbitmqConnection.create(rabbit_connection_string, connectionAttemptInterval)
             channel = connection.channel()
             # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'
             json_map = {}
@@ -134,11 +134,16 @@ def runAPICall(event, context):
             # send a message : routing key must match the queue name
             # channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue',
             #                       body=message)
-            rabbitmq.publish(connection, channel, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
+            rabbitmqConnection.publish(connection, channel, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
             print("Message sent to consumer")
             # connection.close()
 
     return (event)
 
 
-runAPICall(None, None)
+# runAPICall(None, None)
+
+
+def testingAPI():
+    api_obs = requests.get("https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f")
+    return api_obs.status_code
