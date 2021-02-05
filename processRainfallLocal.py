@@ -1,16 +1,11 @@
-import collections
 import time
-import datetime
-import csv
-import json
 import requests
-import pika
+from handleAPIResponse import handleResponse
 
 def runAPICall(event, context):
-
-    api_obs = []
     averages = []
     average = 0
+<<<<<<< HEAD
     prev_rain_total = 0
     current_rain_total = 0
     rain_last10mins = 0
@@ -19,52 +14,19 @@ def runAPICall(event, context):
     rain_duration_in_mins = 0
     records = 0
 
+=======
+>>>>>>> b5484cd67dff3a445077f83343519be12b2acde5
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
     # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
-    while(True):
+    while (True):
         time.sleep(600)
 
-        rain_rates = []
-
         # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        api_obs = requests.get(allDay)
 
-        # Handle unexpected responses by sending message to debug queue and restarting function
-        if api_obs.status_code:
-            if api_obs.status_code != 200:
-                # Send to debug topic
-                if (send_message == 1):
-
-                    # set up connection to  rabbitmq
-                    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-                    if (connection):
-                        # start a channel
-                        channel = connection.channel()
-                        # rabbit config sets up: exchange='rabt-debug-exchange', queue='rabt-rainfall-debug'
-                        json_map = {}
-                        json_map["error"] = "Weather API returned status " + str(api_obs.status_code)
-                        message = json.dumps(json_map)
-
-                        # send a message
-                        channel.basic_publish(exchange='rabt-debug-exchange', routing_key='debug.rainfall',
-                                              body=message)
-                        print("Message sent to consumer (debug topic)")
-                        connection.close()
-                        runAPICall(None, None)
-
-
-        response = api_obs.json()
-
-        # iterate through the array and add each element to the sum variable one at a time 
-        def _sum(arr):   
-            sum = 0 
-            for i in arr: 
-
+<<<<<<< HEAD
                 sum = sum + i      
             return(sum) 
 
@@ -122,29 +84,17 @@ def runAPICall(event, context):
 
             print(records, sum_of_rain_rates, '\n')
             print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
+=======
+        # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+        api_obs = requests.get(allDay)
 
-            # set up connection to  rabbitmq  
-            connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-            if(connection):
-                # start a channel
-                channel = connection.channel() 
-                # rabbit config sets up: exchange='rabt-rainfall-exchange', queue='rabt-rainfall-queue'  
-                json_map = {}
-                json_map["last-recorded-time"] = str(last_recorded_time)
-                json_map["rain-last-10-mins"] = rain_last10mins
-                json_map["current-rain-total"] = current_rain_total
-                json_map["rain-rate-last-10-mins"] = rain_rate_last10mins
-                json_map["rain-rate-average"] = rain_rate_average
-                json_map["rain-duration-in-mins"] = rain_duration_in_mins
-                message = json.dumps(json_map)
-                
-                # send a message : routing key must match the queue name
-                channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
-                print ("Message sent to consumer")
-                connection.close()
+        # handle API response by creating message and publishing to appropriate queue
+        handleResponse(api_obs, send_message)
+>>>>>>> b5484cd67dff3a445077f83343519be12b2acde5
 
-    return(event)
-         
 
-runAPICall(None,None)
+    return (event)
 
+
+runAPICall(None, None)
