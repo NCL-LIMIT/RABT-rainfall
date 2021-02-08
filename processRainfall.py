@@ -138,16 +138,17 @@ def createRainfallMessage(response):
 
 # Create or attempt to create a connection to rabbitMQ
 def create(rabbit_connection_string, attempt_interval):
-    attempts = 0
+    attempts = 1
     parameters = pika.URLParameters(rabbit_connection_string)
 
     # try to connect
-    while attempts < 10:
+    while attempts < 11:
         try:
             connection = pika.BlockingConnection(parameters)
             return connection
 
-        except pika.exceptions:
+        except Exception as e:
+            print(e)
             print("Connection error, retrying. Attempt " + str(attempts))
             time.sleep(attempt_interval)
             attempts += 1
