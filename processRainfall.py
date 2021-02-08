@@ -7,7 +7,7 @@ import pika
 def runAPICall(event, context):
     averages = []
     average = 0
-
+    print("Function called")
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
@@ -154,7 +154,7 @@ def create(rabbit_connection_string, attempt_interval):
             attempts += 1
 
     # give up and throw exception
-    raise ConnectionError("Unable to connection to RabbitMQ")
+    raise ConnectionError("Unable to connect to RabbitMQ")
 
 
 # Publish a message to the queue and close connection
