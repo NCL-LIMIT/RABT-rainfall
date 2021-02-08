@@ -16,10 +16,7 @@ def runAPICall(event, context):
     api_obs = requests.get(allDay)
 
     # handle API response by creating message and publishing to appropriate queue
-    #handleResponse(api_obs, send_message)
-
-    print('function running')
-
+    handleResponse(api_obs, send_message)
     return (event)
 
 
