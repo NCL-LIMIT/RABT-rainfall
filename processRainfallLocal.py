@@ -5,96 +5,16 @@ from handleAPIResponse import handleResponse
 def runAPICall(event, context):
     averages = []
     average = 0
-<<<<<<< HEAD
-    prev_rain_total = 0
-    current_rain_total = 0
-    rain_last10mins = 0
-    rain_rate_last10mins = 0
-    rain_rate_average = 0.0
-    rain_duration_in_mins = 0
-    records = 0
-
-=======
->>>>>>> b5484cd67dff3a445077f83343519be12b2acde5
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
-    # the while loop is only needed when running the file locally and is used to create a 10 minute pause between data feed calls
-    while (True):
-        time.sleep(600)
+    # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    api_obs = requests.get(allDay)
 
-        # New hobo data download  (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-
-<<<<<<< HEAD
-                sum = sum + i      
-            return(sum) 
-
-        # increment for each 10 minute period
-        rain_duration_in_mins = rain_duration_in_mins + 10
-
-        # loop through the data set using the total number of observations as a limit
-        for i in range(len(response['observations'])):
-
-            # get each rain rate measurement
-            rain_rate_last10mins =response['observations'][i]['metric']['precipRate']
-
-            # check for invalid values: if it's not the first reading use previous value instead, otherwise reset to zero
-            if(rain_rate_last10mins > 300) or (rain_rate_last10mins < 0):
-                if(i != 0):
-                    rain_rate_last10mins = response['observations'][i-1]['metric']['precipRate']
-                else:      
-                    rain_rate_last10mins = 0.0
-
-            # store all the rain rates
-            rain_rates.append(rain_rate_last10mins)
-
-            # if its not the first reading use the previous value
-            if(i != 0):
-                prev_rain_total=(response['observations'][i-1]['metric']['precipTotal'] )
-            
-            current_rain_total=(response['observations'][i]['metric']['precipTotal'] )
-            rain_last10mins = (current_rain_total-prev_rain_total)
-            rain_last10mins = round(rain_last10mins, 2)
-
-            last_recorded_timeUTC=(response['observations'][i]['obsTimeUtc'] )
-            ## format last recorded time
-            last_recorded_time = datetime.datetime.strptime(last_recorded_timeUTC, "%Y-%m-%dT%H:%M:%SZ")
-            # calculate the sum of all rain rate obs
-            sum_of_rain_rates = _sum(rain_rates)
-            sum_of_rain_rates = round(sum_of_rain_rates,2)
-       
-
-            # avoid division by zero on the first row
-            if(i != 0):
-                #print('divide ', sum_of_rain_rates, 'by', i)
-                rain_rate_average = sum_of_rain_rates / i
-                rain_rate_average = round(rain_rate_average, 2)
-
-
-            records = i 
-            # increment i
-            i = i + 1
-         
-
-        # only send last values
-        # this will send a a message to rabbitmq given that it connects correctly
-        # if any consumer is running at the same time, the messages will travel through rabbitmq, otherwise they will wait in the 'rabt-rainfall' queue
-        if(send_message == 1):
-
-            print(records, sum_of_rain_rates, '\n')
-            print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|', rain_rate_last10mins, '|', rain_rate_average, '|', rain_duration_in_mins, '\n') 
-=======
-        # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA829&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-        api_obs = requests.get(allDay)
-
-        # handle API response by creating message and publishing to appropriate queue
-        handleResponse(api_obs, send_message)
->>>>>>> b5484cd67dff3a445077f83343519be12b2acde5
-
-
+    # handle API response by creating message and publishing to appropriate queue
+    handleResponse(api_obs, send_message)
     return (event)
-
 
 runAPICall(None, None)
