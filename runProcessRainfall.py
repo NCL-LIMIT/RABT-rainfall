@@ -3,4 +3,4 @@ import time
 
 while(True):
     runAPICall(None,None)
-    time.sleep(600)
+    time.sleep(6)
