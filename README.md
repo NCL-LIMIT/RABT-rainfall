@@ -23,3 +23,11 @@ To run the script locally, install dotenv:
 
 Create a .env file and add correct connection string:
 ```RABBIT_CONNECTION_STRING='amqp://guest:guest@localhost:5672/%2F'```
+
+
+### Running tests locally
+All tests:
+```pytest```
+Only those marked as unit tests:
+```pytest -m unit```
+Note: tests require dotenv to be installed to read environment variable from .env

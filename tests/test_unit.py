@@ -6,6 +6,8 @@ from processRainfall import publish
 import processRainfall
 from unittest.mock import Mock, patch
 from tests.mocks import pika
+from dotenv import load_dotenv
+load_dotenv()
 
 # To run only unit tests, run pytest -m unit, else run pytest to run all tests
 
@@ -61,7 +63,7 @@ def test_correct_queue_used_on_non_200_response(mock_publish, mock_create_connec
     handleResponse(response, 1)
 
     # check publish function called with correct parameters to direct message to debug queue
-    processRainfall.publish.assert_called_once_with(connection,  message, 'debug.rainfall', 'rabt-debug-exchange')
+    processRainfall.publish.assert_called_once_with(connection,  message, 'debug.rainfall', 'rabt-debug-exchange', 'topic')
 
 @pytest.mark.unit
 @patch('processRainfall.create', autospec=True)
@@ -82,21 +84,5 @@ def test_correct_queue_used_on_200_response(mock_create_message, mock_publish, m
     handleResponse(response, 1)
 
     # check publish function called with correct parameters to direct message to rainfall queue
-    processRainfall.publish.assert_called_once_with(connection,  message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
-
-# https://docs.pytest.org/en/stable/pythonpath.html 
-# https://medium.com/@odelucca/recommendation-algorithm-using-python-and-rabbitmq-part-2-connecting-with-rabbitmq-aa0ec933e195
-# https://alexmarandon.com/articles/python_mock_gotchas/
-# https://realpython.com/python-mock-library/
-#https://medium.com/@yasufumy/python-mock-basics-674c33de1ced
-# @pytest.mark.unit
-# @patch('rainfall.handleAPIResponse.requests.get', autospec=True)
-# def test_response_sample_function(mock_get):
-#     url = 'https://example.com/sample.txt'
-#     mock_get.return_value.status_code = 204
-#
-#     assert getResponse(url).status_code == 204
-#
-#     # test requests.get actually gets called
-#     mock_get.assert_called_once_with(url)
+    processRainfall.publish.assert_called_once_with(connection,  message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct')
 

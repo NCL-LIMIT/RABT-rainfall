@@ -15,7 +15,8 @@ def runAPICall(event, context):
 
     # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
     #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IGIFFNOC2&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
     api_obs = requests.get(allDay)
 
     # handle API response by creating message and publishing to appropriate queue
@@ -50,7 +51,7 @@ def handleResponse(res, send_message):
 
         # send a message : routing key must match the queue name
         if send_message == 1:
-            publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange')
+            publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct')
             print("Message sent to consumer")
 
     else:
@@ -63,7 +64,7 @@ def handleResponse(res, send_message):
 
         # send a message
         if send_message == 1:
-            publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange')
+            publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange', 'topic')
             print("Message sent to consumer (debug topic)")
 
 def createRainfallMessage(response):
@@ -167,11 +168,18 @@ def publish(
         body,
         queue,
         exchange,
+        exchange_type
 ):
+
     # todo error handling as above?
 
+    # create channel, exchange and queue
     channel = connection.channel()
+    channel.exchange_declare(exchange=exchange, exchange_type=exchange_type, durable=True, auto_delete=False,
+                             internal=False)
+    channel.queue_declare(queue=queue, durable=True, auto_delete=False)
 
+    # publish message
     channel.basic_publish(exchange=exchange, routing_key=queue, body=body)
 
     # close connection
