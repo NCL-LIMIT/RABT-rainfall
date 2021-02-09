@@ -131,7 +131,7 @@ def runAPICall(event, context):
                 json_map["rain duration in  mins"] = rain_duration_in_mins
                 message = json.dumps(json_map)
                 
-                #channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
+                channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
                 print ("Message sent to consumer")
                 connection.close()
             
