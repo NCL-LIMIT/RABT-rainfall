@@ -5,6 +5,7 @@ import json
 import pika
 import os
 
+
 def runAPICall(event, context):
     averages = []
     average = 0
@@ -23,7 +24,6 @@ def runAPICall(event, context):
 
 
 def handleResponse(res, send_message):
-    # todo replace connection string with env var?
     # rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@rabt-mq:5672/%2F'
     rabbit_connection_string = os.environ['RABBIT_CONNECTION_STRING']
     # rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
