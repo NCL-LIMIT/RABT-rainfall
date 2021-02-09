@@ -7,7 +7,7 @@ import pika
 def runAPICall(event, context):
     averages = []
     average = 0
-    print("Function called")
+
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
 
@@ -19,12 +19,12 @@ def runAPICall(event, context):
     # handle API response by creating message and publishing to appropriate queue
     handleResponse(api_obs, send_message)
 
-    return (event)
+    return event
 
 
 def handleResponse(res, send_message):
     # todo replace connection string with env var?
-    rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
+    rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@172.17.0.8:5672/%2F'
     connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
 
 
@@ -140,22 +140,22 @@ def createRainfallMessage(response):
 def create(rabbit_connection_string, attempt_interval):
     attempts = 1
     parameters = pika.URLParameters(rabbit_connection_string)
+    maxAttempts = 10
 
     # try to connect
-    while attempts < 11:
+    while attempts < maxAttempts+1:
         try:
             connection = pika.BlockingConnection(parameters)
             return connection
 
         except Exception as e:
-            print(e)
             print("Connection error, retrying. Attempt " + str(attempts))
             time.sleep(attempt_interval)
             attempts += 1
 
-    # give up and throw exception
-    raise ConnectionError("Unable to connect to RabbitMQ")
-
+            # give up and throw exception
+            if attempts == maxAttempts+1:
+                raise Exception('Cannot connect to RabbitMQ ' + str(e))
 
 # Publish a message to the queue and close connection
 def publish(
