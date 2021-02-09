@@ -20,8 +20,8 @@ def runAPICall(event, context):
     api_obs = requests.get(allDay)
 
     # handle API response by creating message and publishing to appropriate queue
-    handleResponse(api_obs, send_message)
-    return 'finished'
+    confirmation_message = handleResponse(api_obs, send_message)
+    return confirmation_message
 
 
 def handleResponse(res, send_message):
@@ -32,6 +32,7 @@ def handleResponse(res, send_message):
     # rabbit_connection_string = os.environ.get('RABBIT_CONNECTION_STRING')
     connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
 
+    confirmation_message = 'No message sent'
 
     if res.status_code == 200:
 
@@ -53,6 +54,7 @@ def handleResponse(res, send_message):
         if send_message == 1:
             publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct')
             print("Message sent to consumer")
+            confirmation_message = "Message sent to consumer"
 
     else:
         # Unexpected status code so send to debug topic
@@ -66,6 +68,9 @@ def handleResponse(res, send_message):
         if send_message == 1:
             publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange', 'topic')
             print("Message sent to consumer (debug topic)")
+            confirmation_message = "Message sent to consumer (debug topic)"
+
+    return confirmation_message
 
 def createRainfallMessage(response):
     rain_rates = []
