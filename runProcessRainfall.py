@@ -5,4 +5,4 @@ load_dotenv()
 
 while(True):
     runAPICall(None,None)
-    time.sleep(6)
+    time.sleep(600)
