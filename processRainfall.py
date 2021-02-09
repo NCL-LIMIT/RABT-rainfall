@@ -19,13 +19,13 @@ def runAPICall(event, context):
 
     # handle API response by creating message and publishing to appropriate queue
     handleResponse(api_obs, send_message)
-    print('finished')
     return 'finished'
 
 
 def handleResponse(res, send_message):
     # todo replace connection string with env var?
-    rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@rabt-mq:5672/%2F'
+    # rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@rabt-mq:5672/%2F'
+    rabbit_connection_string = os.environ['RABBIT_CONNECTION_STRING']
     # rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
 
     # rabbit_connection_string = os.environ.get('RABBIT_CONNECTION_STRING')
