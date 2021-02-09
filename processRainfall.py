@@ -3,6 +3,7 @@ import time
 import requests
 import json
 import pika
+import os
 
 def runAPICall(event, context):
     averages = []
@@ -24,7 +25,8 @@ def runAPICall(event, context):
 
 def handleResponse(res, send_message):
     # todo replace connection string with env var?
-    rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@172.17.0.8:5672/%2F'
+    rabbit_connection_string = 'amqp://oF4pn_zQff8sisySjKAbm-vOzgG83NvR:1SBFwoAL5IuTa7C7IkaLNvlfgPgbb5ff@rabt-mq:5672/%2F'
+    # rabbit_connection_string = os.environ.get('RABBIT_CONNECTION_STRING')
     connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
 
 
