@@ -7,7 +7,6 @@ The HOBOnet sensors live on the RABT hillside and work with a HOBOnet Station Da
 
 The process-rainfall.py file can be configured to run from the api, or accept test json input from file. The output from the script can be directed to a csv file or to RabbitMQ.
 
-
 ### RabbitMQ and the RELK stack
 
 RabbitMQ forms part of the RELK stack that also contains ElasticSearch, Logstash and Kibana.
