@@ -10,7 +10,7 @@ jobs:
       matrix:
         python-version: [3.8]
     env:
-#      Just needs something that passes pika's tests - not actually used
+      # Just needs something that passes pika's tests - not actually used
       RABBIT_CONNECTION_STRING: 'amqp://guest:guest@localhost:5672'
     steps:
       - uses: actions/checkout@v2
@@ -22,9 +22,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
-#          install python-dotenv as this is present in test file for local testing
+          # install python-dotenv as this is present in test file for local testing
           pip install python-dotenv
-#               install other dependencies
+          # install other dependencies
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
