@@ -65,7 +65,7 @@ def handleResponse(res, send_message):
 
         # send a message
         if send_message == 1:
-            publish(connection, message, 'debug.rainfall', 'rabt-debug-exchange', 'topic')
+            publish(connection, message, 'rabt-debug-rainfall', 'rabt-debug-exchange', 'topic')
             print("Message sent to consumer (debug topic)")
             confirmation_message = "Message sent to consumer (debug topic)"
 
