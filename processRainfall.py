@@ -14,9 +14,9 @@ def runAPICall(event, context):
     send_message = 1
 
     # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
-    #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-    # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IGIFFNOC2&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IGIFFNOC2&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
     api_obs = requests.get(allDay)
 
     # handle API response by creating message and publishing to appropriate queue
@@ -30,7 +30,7 @@ def handleResponse(res, send_message):
     # rabbit_connection_string = 'amqp://guest:guest@localhost:5672/%2F'
 
     # rabbit_connection_string = os.environ.get('RABBIT_CONNECTION_STRING')
-    connectionAttemptInterval = 10 # interval to retry to connect to rabbitMQ in seconds
+    connectionAttemptInterval = 10  # interval to retry to connect to rabbitMQ in seconds
 
     confirmation_message = 'No message sent'
 
@@ -45,13 +45,12 @@ def handleResponse(res, send_message):
         # this will send a a message to rabbitmq given that it connects correctly
         # if any consumer is running at the same time, the messages will travel through rabbitmq, otherwise they will wait in the 'rabt-rainfall' queue
 
-
         # set up connection to  rabbitmq
         connection = create(rabbit_connection_string, connectionAttemptInterval)
-       
+
         # send a message : routing key must match the queue name
         if send_message == 1:
-            publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct')
+            publish(connection, message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct', 'rabt-rainfall-queue')
             print("Message sent to consumer")
             confirmation_message = "Message sent to consumer"
 
@@ -65,14 +64,14 @@ def handleResponse(res, send_message):
 
         # send a message
         if send_message == 1:
-            publish(connection, message, 'rabt-debug-rainfall', 'rabt-debug-exchange', 'topic')
+            publish(connection, message, 'rabt-debug-rainfall', 'rabt-debug-exchange', 'topic', 'debug.rainfall')
             print("Message sent to consumer (debug topic)")
             confirmation_message = "Message sent to consumer (debug topic)"
 
     return confirmation_message
 
-def createRainfallMessage(response):
 
+def createRainfallMessage(response):
     prev_rain_total = 0
     current_rain_total = 0
     rain_last10mins = 0
@@ -106,7 +105,7 @@ def createRainfallMessage(response):
         last_recorded_timeUTC = (response['observations'][i]['obsTimeUtc'])
         ## format last recorded time
         last_recorded_time = datetime.datetime.strptime(last_recorded_timeUTC, "%Y-%m-%dT%H:%M:%SZ")
-       
+
         # increment i
         i = i + 1
 
@@ -117,7 +116,7 @@ def createRainfallMessage(response):
     json_map["rain-rate-average"] = rain_rate_average
     json_map["rain-duration-in-mins"] = rain_duration_in_mins
     message = json.dumps(json_map)
-    print(last_recorded_time, '|', rain_last10mins, '|', current_rain_total,  '|',
+    print(last_recorded_time, '|', rain_last10mins, '|', current_rain_total, '|',
           rain_rate_average, '|', rain_duration_in_mins, '\n')
     return message
 
@@ -129,7 +128,7 @@ def create(rabbit_connection_string, attempt_interval):
     maxAttempts = 10
 
     # try to connect
-    while attempts < maxAttempts+1:
+    while attempts < maxAttempts + 1:
         try:
             connection = pika.BlockingConnection(parameters)
             return connection
@@ -140,8 +139,9 @@ def create(rabbit_connection_string, attempt_interval):
             attempts += 1
 
             # give up and throw exception
-            if attempts == maxAttempts+1:
+            if attempts == maxAttempts + 1:
                 raise Exception('Cannot connect to RabbitMQ ' + str(e))
+
 
 # Publish a message to the queue and close connection
 def publish(
@@ -149,9 +149,9 @@ def publish(
         body,
         queue,
         exchange,
-        exchange_type
+        exchange_type,
+        key
 ):
-
     # todo error handling as above?
 
     # create channel, exchange and queue
@@ -160,8 +160,10 @@ def publish(
                              internal=False)
     channel.queue_declare(queue=queue, durable=True, auto_delete=False)
 
+    channel.queue_bind(exchange=exchange, queue=queue, routing_key=key)
+
     # publish message
-    channel.basic_publish(exchange=exchange, routing_key=queue, body=body)
+    channel.basic_publish(exchange=exchange, routing_key=key, body=body)
 
     # close connection
     if connection.is_open:

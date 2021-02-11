@@ -63,7 +63,7 @@ def test_correct_queue_used_on_non_200_response(mock_publish, mock_create_connec
     handleResponse(response, 1)
 
     # check publish function called with correct parameters to direct message to debug queue
-    processRainfall.publish.assert_called_once_with(connection,  message, 'debug.rainfall', 'rabt-debug-exchange', 'topic')
+    processRainfall.publish.assert_called_once_with(connection,  message, 'rabt-debug-rainfall' , 'rabt-debug-exchange', 'topic', 'debug.rainfall')
 
 @pytest.mark.unit
 @patch('processRainfall.create', autospec=True)
@@ -84,5 +84,5 @@ def test_correct_queue_used_on_200_response(mock_create_message, mock_publish, m
     handleResponse(response, 1)
 
     # check publish function called with correct parameters to direct message to rainfall queue
-    processRainfall.publish.assert_called_once_with(connection,  message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct')
+    processRainfall.publish.assert_called_once_with(connection,  message, 'rabt-rainfall-queue', 'rabt-rainfall-exchange', 'direct', 'rabt-rainfall-queue')
 
