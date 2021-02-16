@@ -7,7 +7,6 @@ The HOBOnet sensors live on the RABT hillside and work with a HOBOnet Station Da
 
 The process-rainfall.py file can be configured to run from the api, or accept test json input from file. The output from the script can be directed to a csv file or to RabbitMQ.
 
-
 ### RabbitMQ and the RELK stack
 
 RabbitMQ forms part of the RELK stack that also contains ElasticSearch, Logstash and Kibana.
@@ -16,3 +15,18 @@ Please see the readme at :
 https://github.com/NCL-LIMIT/RABT-Infrastructure/tree/main/docker-relk
 
 It has instructions on how to set up and access the RELK stack. Messages are passed through the RabbitMQ exchange to ElasticSearch via a Logstash consumer. Messages are visible in Kibana's UI.
+
+### Running script locally
+To run the script locally, install dotenv:
+```pip install python-dotenv```
+
+Create a .env file and add correct connection string:
+```RABBIT_CONNECTION_STRING='amqp://guest:guest@localhost:5672/%2F'```
+
+
+### Running tests locally
+All tests:
+```pytest```
+Only those marked as unit tests:
+```pytest -m unit```
+Note: tests require dotenv to be installed to read environment variable from .env
