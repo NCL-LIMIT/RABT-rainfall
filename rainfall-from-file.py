@@ -73,7 +73,7 @@ def runAPICall(event, context):
         
         # write each row to file
         if (write_to_file == 1):
-            writer.writerow({'last recorded time': last_recorded_time, 'rain last 10 mins': rain_last10mins, 'current rain total': current_rain_total, 'rain rate average': rain_rate_average, 'rain rate str': rain_rate_str })
+            writer.writerow({'last recorded time': last_recorded_time, 'rain last 10 mins': rain_last10mins, 'current rain total': current_rain_total, 'rain rate average': rain_rate_average })
 
 
         if(send_message == 1):
