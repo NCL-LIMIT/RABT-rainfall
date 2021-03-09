@@ -15,8 +15,8 @@ def runAPICall(event, context):
 
     # New hobo data download (IALEXA29 currently unavailable - ILOCHE16 updates 15 mins)
     # allDay = "https://api.weather.com/v2/pws/observations/all/1day?stationId=IALEXA29&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
-    # allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IGIFFNOC2&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    #allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=ILOCHE16&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
+    allDay="https://api.weather.com/v2/pws/observations/all/1day?stationId=IGIFFNOC2&format=json&units=m&apiKey=4a83daf5d1b3462d83daf5d1b3f62d8f"
     api_obs = requests.get(allDay)
 
     # handle API response by creating message and publishing to appropriate queue
@@ -76,10 +76,6 @@ def createRainfallMessage(response):
     current_rain_total = 0
     rain_last10mins = 0
     rain_rate_average = 0.0
-    rain_duration_in_mins = 0
-
-    # increment for each 10 minute period
-    rain_duration_in_mins = rain_duration_in_mins + 10
 
     # loop through the data set using the total number of observations as a limit
     for i in range(len(response['observations'])):
@@ -101,7 +97,6 @@ def createRainfallMessage(response):
         current_rain_total = (response['observations'][i]['metric']['precipTotal'])
         rain_last10mins = (current_rain_total - prev_rain_total)
         rain_last10mins = round(rain_last10mins, 2)
-
         last_recorded_timeUTC = (response['observations'][i]['obsTimeUtc'])
         ## format last recorded time
         last_recorded_time = datetime.datetime.strptime(last_recorded_timeUTC, "%Y-%m-%dT%H:%M:%SZ")
@@ -114,10 +109,12 @@ def createRainfallMessage(response):
     json_map["rain-last-10-mins"] = rain_last10mins
     json_map["current-rain-total"] = current_rain_total
     json_map["rain-rate-average"] = rain_rate_average
-    json_map["rain-duration-in-mins"] = rain_duration_in_mins
+
     message = json.dumps(json_map)
     print(last_recorded_time, '|', rain_last10mins, '|', current_rain_total, '|',
-          rain_rate_average, '|', rain_duration_in_mins, '\n')
+          rain_rate_average,  '\n')
+
+     
     return message
 
 
@@ -156,10 +153,8 @@ def publish(
 
     # create channel, exchange and queue
     channel = connection.channel()
-    channel.exchange_declare(exchange=exchange, exchange_type=exchange_type, durable=True, auto_delete=False,
-                             internal=False)
+    channel.exchange_declare(exchange=exchange, exchange_type=exchange_type, durable=True, auto_delete=False,internal=False)
     channel.queue_declare(queue=queue, durable=True, auto_delete=False)
-
     channel.queue_bind(exchange=exchange, queue=queue, routing_key=key)
 
     # publish message

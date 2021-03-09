@@ -19,7 +19,7 @@ def runAPICall(event, context):
     current_rain_total = 0
     rain_last10mins = 0
     rain_rate_average = 0.0
-    rain_duration_in_mins = 0
+    rain_rate_av = ""
 
     # flag to indicate whether we want to send to rabbitmq
     send_message = 1
@@ -44,9 +44,6 @@ def runAPICall(event, context):
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
 
-    # increment for each 10 minute period
-    rain_duration_in_mins = rain_duration_in_mins + 10
-
     # loop through the data set using the total number of observations as a limit
     for i in range(len(response['observations'])):
 
@@ -60,9 +57,7 @@ def runAPICall(event, context):
             else:      
                 rain_rate_average = 0.0
 
-        # increment for each 10 minute period
-        rain_duration_in_mins = rain_duration_in_mins + 10
-
+    
         # if its not the first reading use the previous value
         if(i != 0):
             prev_rain_total=(response['observations'][i-1]['metric']['precipTotal'] )
@@ -70,16 +65,15 @@ def runAPICall(event, context):
         current_rain_total=(response['observations'][i]['metric']['precipTotal'] )
         rain_last10mins = (current_rain_total-prev_rain_total)
         rain_last10mins = round(rain_last10mins, 2)
-
         last_recorded_timeUTC=(response['observations'][i]['obsTimeUtc'] )
         ## format last recorded time
         last_recorded_time = datetime.datetime.strptime(last_recorded_timeUTC, "%Y-%m-%dT%H:%M:%SZ")
 
-        print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|',  rain_rate_average, '|', rain_duration_in_mins, '\n') 
+        print(last_recorded_time ,'|', rain_last10mins,'|', current_rain_total, '|',  rain_rate_average, '\n') 
         
         # write each row to file
         if (write_to_file == 1):
-            writer.writerow({'last recorded time': last_recorded_time, 'rain last 10 mins': rain_last10mins, 'current rain total': current_rain_total, 'rain rate average': rain_rate_average, 'rain duration in mins': rain_duration_in_mins })
+            writer.writerow({'last recorded time': last_recorded_time, 'rain last 10 mins': rain_last10mins, 'current rain total': current_rain_total, 'rain rate average': rain_rate_average, 'rain rate str': rain_rate_str })
 
 
         if(send_message == 1):
@@ -102,7 +96,6 @@ def runAPICall(event, context):
                 json_map["rain-last-10-mins"] = rain_last10mins
                 json_map["current-rain-total"] = current_rain_total
                 json_map["rain-rate-average"] = rain_rate_average
-                json_map["rain-duration-in-mins"] = rain_duration_in_mins
                 message = json.dumps(json_map)
                 
                 channel.basic_publish(exchange='rabt-rainfall-exchange', routing_key='rabt-rainfall-queue', body=message)
