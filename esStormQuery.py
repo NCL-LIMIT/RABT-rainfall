@@ -5,17 +5,8 @@ import json
 from datetime import datetime
 from elasticsearch import Elasticsearch
 
+
 es = Elasticsearch(
-    ['localhost'],
-    http_auth=('elastic', 'N3KLm07g303vFAu7rz9KQ2K8'),
-    scheme="https",
-    port=9200,
-    verify_certs=False,
-    ssl_show_warn=False
-)
-
-
-""" es = Elasticsearch(
     ['https://es.rabt.ncldata.dev/'],
     http_auth=('elastic', os.environ['ES_PASSWORD']),
     # turn on SSL
@@ -23,8 +14,8 @@ es = Elasticsearch(
     # make sure we verify SSL certificates
     verify_certs=True,
     # provide a path to CA certs on disk
-    ca_certs='/path/to/CA_certs'
-) """
+    #ca_certs='/path/to/CA_certs'
+)
 
 if not es.ping():
     raise ValueError("Connection failed")
@@ -40,7 +31,7 @@ def getStormData:
     confirmation_message = ''
 
     # query Elasticsearch for all values in the last 48 hours
-    res = es.search(index="rabt-rainfall-*", body={"sort": [{"@timestamp": {"order": "asc"}}],"query":  {"bool": {"filter": [ { "range" : { "@timestamp" : { "gte" : "now-7d" } } }, { "range" : { "rain-last-10-mins" : { "gte" : 0.0 } } } ]}}}, size=288)
+    res = es.search(index="rabt-rainfall-*", body={"sort": [{"@timestamp": {"order": "asc"}}],"query":  {"bool": {"filter": [ { "range" : { "@timestamp" : { "gte" : "now-48h" } } }, { "range" : { "rain-last-10-mins" : { "gte" : 0.0 } } } ]}}}, size=288)
 
     # check that we have some results
     if(res['hits']['hits'] != []):
