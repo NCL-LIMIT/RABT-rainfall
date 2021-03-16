@@ -88,8 +88,8 @@ def getStormData:
 
         # close the connection to ElasticSearch
         es.close()
-        return(confirmation_message)
-
-
     else:
-        print('no results')
+        confirmation_message = 'No results'  
+
+
+    return(confirmation_message) 
