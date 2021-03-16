@@ -29,12 +29,17 @@ es = Elasticsearch(
 if not es.ping():
     raise ValueError("Connection failed")
 
+
 def runAPICall(event, context):
     confirmation_message = getStormData()
     return confirmation_message
 
 def getStormData:
-   # query Elasticsearch for all values in the last 48 hours
+
+    # create blank message
+    confirmation_message = ''
+
+    # query Elasticsearch for all values in the last 48 hours
     res = es.search(index="rabt-rainfall-*", body={"sort": [{"@timestamp": {"order": "asc"}}],"query":  {"bool": {"filter": [ { "range" : { "@timestamp" : { "gte" : "now-7d" } } }, { "range" : { "rain-last-10-mins" : { "gte" : 0.0 } } } ]}}}, size=288)
 
     # check that we have some results
@@ -48,10 +53,9 @@ def getStormData:
             dict_new = dict(hit[1]['_source'])
             df = df.append(dict_new, ignore_index=True)
 
-        # declare a empty list and blank message
+        # declare a empty list
         lastindex = []
-        confirmation_message = ''
-
+       
         # check size of groups having 0 value
         for k, v in df[df['rain-rate-average']== 0].groupby((df['rain-rate-average'] != 0).cumsum()):
             groupsize  = v.shape[0]
