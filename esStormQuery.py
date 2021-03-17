@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 
 es = Elasticsearch(
     ['https://es.rabt.ncldata.dev/'],
-    http_auth=('elastic', os.environ['ES_PASSWORD']),
+    http_auth=('elastic', '1gt6DEHP935N6J88axTW1rU5'),
     # turn on SSL
     use_ssl=True,
     # make sure we verify SSL certificates
