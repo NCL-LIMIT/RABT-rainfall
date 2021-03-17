@@ -50,8 +50,8 @@ def getStormData():
         # check size of groups having 0 value
         for k, v in df[df['rain-rate-average']== 0].groupby((df['rain-rate-average'] != 0).cumsum()):
             groupsize  = v.shape[0]
-            # this gets the most recent time period where there are more than 30 zero values
-            if(groupsize >=20) :
+            # this gets the most recent time period where there are more than 36 zero values
+            if(groupsize >=36) :
                 # get the last row in that set i.e. the last time there was a zero value before it started raining
                 lastrow = v.tail(1)
                 # get the row index (the data type is list)
