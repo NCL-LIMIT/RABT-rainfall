@@ -25,7 +25,7 @@ def runAPICall(event, context):
     confirmation_message = getStormData()
     return confirmation_message
 
-def getStormData:
+def getStormData():
 
     # create blank message
     confirmation_message = ''
@@ -78,13 +78,13 @@ def getStormData:
             else: 
                 confirmation_message = 'Not enough rain'    
         else:
-            confirmation_message = 'No storm data'            
+            confirmation_message = 'No storm data' 
 
-
-        # close the connection to ElasticSearch
-        es.close()
+ 
     else:
-        confirmation_message = 'No results'  
+        confirmation_message = 'No results'
 
 
+    # close the connection to ElasticSearch
+    es.close() 
     return(confirmation_message) 
