@@ -5,16 +5,13 @@ import json
 from datetime import datetime
 from elasticsearch import Elasticsearch
 
-
 es = Elasticsearch(
     ['https://es.rabt.ncldata.dev/'],
-    http_auth=('elastic', '1gt6DEHP935N6J88axTW1rU5'),
+    http_auth=('elastic', os.environ['ES_PASSWORD']),
     # turn on SSL
     use_ssl=True,
     # make sure we verify SSL certificates
-    verify_certs=True,
-    # provide a path to CA certs on disk
-    #ca_certs='/path/to/CA_certs'
+    verify_certs=True
 )
 
 if not es.ping():
